@@ -2,7 +2,7 @@
 layout: post
 title: 用Git上传与下载
 date: 2018-10-12 
-tags: Git Transfer 
+tags: GitTransfer 
 ---
 
 # Git Transfer
@@ -10,6 +10,8 @@ tags: Git Transfer
 ## 介绍
 
 用Git上传与下载
+
+#####  说明：xiaoliang8006为用户名   xiaoliang8006.github.io为仓库名 
 
 # 目录
 
@@ -24,7 +26,7 @@ tags: Git Transfer
 	#两种方式:
 	git clone git@github.com:xiaoliang8006/xiaoliang8006.github.io.git
 	git clone https://github.com/xiaoliang8006/xiaoliang8006.github.io.git
-	说明：xiaoliang8006为用户名   xiaoliang8006.github.io为仓库名
+	
 
 ## <a name="n1"></a>上传git文件
 
