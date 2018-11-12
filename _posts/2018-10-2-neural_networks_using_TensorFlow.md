@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 使用 TensorFlow 实现神经网络
-date: 2018-10-20 
+date: 2018-10-2 
 tags: 机器学习  
 ---
 
@@ -523,7 +523,5 @@ sample_submission.to_csv(os.path.join(sub_dir, 'sub01.csv'), index=False)
 这篇文章是在 [An Introduction to Implementing Neural Networks using TensorFlow](https://www.analyticsvidhya.com/blog/2016/10/an-introduction-to-implementing-neural-networks-using-tensorflow/) 的基础上做的翻译和局部调整，如果发现翻译中有不对或者歧义的的地方欢迎在下面评论里提问，我会加以修正 。
 
 
-
-<br>
-转载请注明：[潘柏信的博客](http://baixin) » [使用 TensorFlow 实现神经网络](http://baixin.io/2016/11/neural_networks_using_TensorFlow/)  
+ 
 
