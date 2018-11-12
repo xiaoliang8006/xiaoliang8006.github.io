@@ -98,11 +98,5 @@ tags: build-blog
 
   ​
 
-<h3>模板问题</h3>
-
-若是觉得你现在的模板不好的话，想用我现在的模板的话，也有，我现在用的是[leopardpan.github.io](leopardpan.github.io)的模板，以后也许就会换了，不过若是有人要用的话，下面是他利用jekyll搭建个人博客的基本内容的[网址](http://baixin.io/2016/10/jekyll_tutorials1/)
-
-<h4>以上便是利用jekyll搭建个人博客的基本内容，图少了点，尴尬。。</h4>
-
 <h3>最后，喜欢就star下呗</h3>
 

@@ -11,7 +11,7 @@ tags: GitTransfer
 
 #### CentOS7+jdk6以上+tomcat7
 
-需要提前安装好jdk
+#####需要提前安装好jdk
  
 # 目录
 
@@ -33,16 +33,19 @@ tags: GitTransfer
 	tar -zxv -f apache-tomcat-7.0.29.tar.gz // 解压压缩包
 	rm -rf apache-tomcat-7.0.29.tar.gz // 删除压缩包
 	mv apache-tomcat-7.0.29 tomcat7
+
 ## <a name="n1"></a>(可选)修改端口
 
 server.xml可以配置端口，编码以及配置项目等等，我们这里就配置一个端口，把默认的8080，修改成80
 
 	vim /usr/local/tomcat7/conf/server.xml
 	找到port 8080把其改为80
+
 ## <a name="n1"></a>启动tomcat
 	/usr/local/tomcat7/bin/startup.sh //启动tomcat
 	停止时用：
  	/usr/local/tomcat7/bin/shutdown.sh //停止tomcat
+
 ## <a name="n1"></a>放行端口
 	vim /etc/sysconfig/iptables
 	#增加以下代码
@@ -53,9 +56,11 @@ server.xml可以配置端口，编码以及配置项目等等，我们这里就�
 	或者直接执行
 	firewall-cmd --zone=public --add-port=80/tcp --permanent
 	firewall-cmd --reload
+
 ## <a name="n1"></a>设置开机启动
 	vim /etc/rc.d/rc.local
 	#加入以下命令
 	source /etc/profile
 	/usr/local/tomcat/bin/startup.sh
+
 ## 完毕
