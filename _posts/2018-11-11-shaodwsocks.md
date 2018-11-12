@@ -1,15 +1,24 @@
 <link href="http://cdn.bootcss.com/highlight.js/8.0/styles/monokai_sublime.min.css" rel="stylesheet">  
 <script src="http://cdn.bootcss.com/highlight.js/8.0/highlight.min.js"></script>  
 <script >hljs.initHighlightingOnLoad();</script> 
-#CentOS7安装shadowsocks
-#目录
-##1.环境
-##2.安装准备
-##3.安装pip
-##4.安装shadowsocks
-##5.配置shadowsocks
-##6.启动与停止
-##7.设置开机自启
+
+# CentOS7安装shadowsocks
+
+# 目录
+
+## 1.环境
+
+## 2.安装准备
+
+## 3.安装pip
+
+## 4.安装shadowsocks
+
+## 5.配置shadowsocks
+
+## 6.启动与停止
+
+## 7.设置开机自启
 
 ##环境
 
