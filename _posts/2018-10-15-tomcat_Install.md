@@ -1,6 +1,6 @@
 ---
 layout: post
-title: CentOS7安装tomcat
+title: tomcat
 date: 2018-10-12 
 tags: GitTransfer 
 ---
@@ -11,7 +11,7 @@ tags: GitTransfer
 
 #### CentOS7+jdk6以上+tomcat7
 
-#####需要提前安装好jdk
+##### 需要提前安装好jdk
  
 # 目录
 
