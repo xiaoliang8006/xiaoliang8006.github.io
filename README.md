@@ -30,11 +30,11 @@ tags: build-blog
 
 我现在所用是windows所以我用的是[Rubyinstaller](http://rubyinstaller.org/downloads/)安装
 
-![安装地址的界面](../../../images/photo/Ruby-install-page.PNG)
+![安装地址的界面](images/photo/Ruby-install-page.PNG)
 
 无脑式安装，直接下一步就好
 
-![安装过程](../../../images/photo/Ruby-installed.PNG)
+![安装过程](images/photo/Ruby-installed.PNG)
 
 
 
@@ -42,11 +42,11 @@ tags: build-blog
 
 在安装RubyDevKit时，仅仅需要注意的是要与你安装的Ruby版本一致
 
-![安装RubyDevKit的地址界面](../../../images/photo/DevKit-install-page.PNG)
+![安装RubyDevKit的地址界面](images/photo/DevKit-install-page.PNG)
 
 这是去往[RubyDevKit](http://rubyinstaller.org/downloads/)的链接，下载后直接解压到你想让它在的文件夹下，或者自己创建一个文件夹用以存放
 
-![下载下来的RubyDevKit](../../../images/photo/RubyDevKit-installed.PNG)
+![下载下来的RubyDevKit](images/photo/RubyDevKit-installed.PNG)
 
 <h3>此时便有一些命令需要去敲了</h3>
 
