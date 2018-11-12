@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 用Git上传与下载
-date: 2018-10-12 
+date: 2018-08-12 
 tags: GitTransfer 
 ---
 
