@@ -1,0 +1,64 @@
+---
+layout: post
+title:  "牛客网 剑指offer 链表中倒数第k个结点"
+
+---
+时间限制：1秒空间限制：32768K热度指数：15692
+
+本题知识点：[链表](https://www.nowcoder.com/questionCenter?questionTypes=000100&mutiTagIds=580)
+
+**算法知识视频讲解
+
+## 题目描述
+
+输入一个链表，输出该链表中倒数第k个结点。
+
+
+
+两个指针，第一个指针指到第k位时，第二个指针开始操作，
+
+因为总长相同，n=k+m  ;  n=m+k;
+
+
+
+或者利用dfs完美解决
+
+代码如下：
+
+```c++
+
+
+
+
+
+
+//dfs::
+/*
+struct ListNode {
+	int val;
+	struct ListNode *next;
+	ListNode(int x) :
+			val(x), next(NULL) {
+	}
+};*/
+class Solution {
+public:
+    ListNode*K=NULL;
+    int n=0;
+    void dfs(ListNode* pListHead,unsigned int k){
+        if(pListHead==NULL)return;
+        dfs(pListHead->next,k);
+        ++n;
+        if(n==k){
+            K=pListHead;
+        }
+        
+    }
+    ListNode* FindKthToTail(ListNode* pListHead, unsigned int k) {
+    	
+        dfs(pListHead,k);
+        return K;
+    }
+};
+```
+
