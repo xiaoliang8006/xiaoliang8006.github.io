@@ -56,7 +56,7 @@ tags: build-blog
 
 - 首先输入 ‘ruby dk.rb init’  将会生成一个'config.yml'它的作用是是检测系统安装的ruby的位置并记录在这个文件中
 
-![配置界面](../../../images/photo/configuration.PNG)
+![配置界面](images/photo/configuration.PNG)
 
 (由于我已安装便不再继续演示此处的安装过程，只要在此界面中按照我的步骤，输入相关命令便可成功)
 
@@ -80,7 +80,7 @@ tags: build-blog
 
 - 若是测试成功的话会有如下显示
 
-  ![成功界面](../../../images/photo/succeed.PNG)
+  ![成功界面](images/photo/succeed.PNG)
 
 或者有一种错误是提示你要在'jekyll server’前加上‘bundle exec’，此时加上便可
 
