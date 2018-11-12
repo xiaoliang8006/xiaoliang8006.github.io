@@ -20,16 +20,16 @@
 
 ## 7.设置开机自启
 
-##环境
+## 环境
 
-###CentOS7+python2.7+pip18.0
+### CentOS7+python2.7+pip18.0
 
-##安装准备
+## 安装准备
 
 由于CentOS7自带了python2.7, 所以只需要安装pip18.
 (注意，CentOS6自带的是python2.6, 是无法安装pip18的，所以必须安装python2.7及以上版本)
 
-##安装pip
+## 安装pip
 
 查看python版本:
 
@@ -60,15 +60,15 @@
 
 	pip install --upgrade pip
 
-##查看pip版本:
+## 查看pip版本:
 
 	pip -V
 
-##安装shadowsocks
+## 安装shadowsocks
 
 	pip install shadowsocks
 
-##配置shadowsocks
+## 配置shadowsocks
 
 文件位置: /etc/shadowsocks.json （请注意代码中有无引号
 	
@@ -102,12 +102,12 @@ method：加密方法:可选择 “bf-cfb”, “aes-256-cfb”, “des-cfb”, 
 
 fast_open:true 或 false
 
-##启动与停止
+## 启动与停止
 
 	ssserver -c /etc/shadowsocks.json -d start #启动 
 	ssserver -c /etc/shadowsocks.json -d stop #停止
 
-##设置开机自启
+## 设置开机自启
 
 vim /etc/rc.local，加入以下代码:
 
@@ -119,7 +119,7 @@ vim /etc/rc.local，加入以下代码:
 
 
 
-##完毕
+## 完毕
 
 
 
