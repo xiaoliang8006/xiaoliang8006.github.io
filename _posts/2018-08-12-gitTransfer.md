@@ -2,7 +2,7 @@
 layout: post
 title: 用Git上传与下载
 date: 2018-08-12 
-tags: 博客
+tags: 工具
 ---
 
 # Git Transfer
