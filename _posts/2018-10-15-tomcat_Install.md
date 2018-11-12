@@ -1,8 +1,8 @@
 ---
 layout: post
 title: tomcat
-date: 2018-10-12 
-tags: GitTransfer 
+date: 2018-10-15 
+tags: 博客 
 ---
 
 # CentOS7安装tomcat

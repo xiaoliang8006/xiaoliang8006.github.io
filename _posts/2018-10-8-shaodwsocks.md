@@ -2,6 +2,14 @@
 <script src="http://cdn.bootcss.com/highlight.js/8.0/highlight.min.js"></script>  
 <script >hljs.initHighlightingOnLoad();</script> 
 
+---
+layout: post
+title: tomcat
+date: 2018-10-8 
+tags: 博客 
+---
+
+
 # CentOS7安装shadowsocks
 
 # 目录
