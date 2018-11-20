@@ -1,6 +1,6 @@
 ---
 layout: post
-title: shadowsocks
+title: centos7 mysql数据库安装和配置 
 date: 2018-11-16 
 tags: 博客 
 ---
@@ -112,6 +112,7 @@ mysql配置文件为/etc/my.cnf
 		-u用户
 		-p密码
 		-P端口号（大写P）
+
 ## 完毕
 
 

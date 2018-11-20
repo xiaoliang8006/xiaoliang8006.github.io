@@ -1,6 +1,6 @@
 ---
 layout: post
-title: tomcat
+title: CentOS7安装tomcat
 date: 2018-10-15 
 tags: 博客 
 ---
