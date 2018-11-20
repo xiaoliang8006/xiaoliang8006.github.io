@@ -82,6 +82,7 @@ MariaDB数据库管理系统是MySQL的一个分支，主要由开源社区在�
 设置密码
 
 	mysql> set password for 'root'@'localhost' =password('password');
+
 不需要重启数据库即可生效。安装完以后mariadb自动就被替换了，将不再生效。
 
 	 rpm -qa |grep mariadb #因此将查询不到该包
@@ -95,13 +96,17 @@ mysql配置文件为/etc/my.cnf
 	[mysql]
 	default-character-set =utf8
 这里的字符编码必须和/usr/share/mysql/charsets/Index.xml中一致。
+
 ## 2、远程连接设置
+
 把在所有数据库的所有表的所有权限赋值给位于所有IP地址的root用户。
 
 	mysql> grant all privileges on *.* to root@'%'identified by 'password';
+
 如果是新用户而不是root，则要先新建用户
 
 	mysql>create user 'username'@'%' identified by 'password';  
+
 此时就可以进行远程连接了。
 ## 登录
 
