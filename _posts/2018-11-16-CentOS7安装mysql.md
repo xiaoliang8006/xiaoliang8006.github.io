@@ -5,7 +5,7 @@ date: 2018-11-16
 tags: 博客 
 ---
 
-# centos7 mysql数据库安装和配置
+# centos7 mysql数据库安装和配置  
 
 # 目录
 
