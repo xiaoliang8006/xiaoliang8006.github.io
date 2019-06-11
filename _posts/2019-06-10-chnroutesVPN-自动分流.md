@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  chnroutes VPN 自动分流
+title:  chnroutesVPN-自动分流
 date: 2019-06-10 
 tags: 博客 
 ---
