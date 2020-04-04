@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  ssh免密登录及scp文件传输
+title:  ssh免密登录及scp、rsync文件传输
 date: 2020-01-02
 tags: 博客
 ---
@@ -23,9 +23,9 @@ Hadoop控制脚本(并非守护进程)依赖SSH来执行针对整个集群的操
 
 -f 指定生成秘钥对保持的位置
 
-2、将客户端公钥发送个服务端（其他客户端），使用ssh-copy-id
+2、将客户端公钥发送给服务端（其他客户端），使用ssh-copy-id
 
-    $ ssh-copy-id root@bigdata2
+    $ ssh-copy-id -i ~/.ssh/id_rsa.pub root@bigdata2
 
     注：经过ssh-copy-id后接收公钥的服务端会把公钥追加到服务端对应用户的$HOME/.ssh/authorized_keys文件中.
 
@@ -56,7 +56,7 @@ scp工具，基于ssh远程安全登录的，可以将主机A上的文件或目�
     $ scp -r 本机目录 user@host:路径/
 
     将bigdata1上的/bin目录拷贝到bigdata2的根目录下
-    $ scp -r /bin root@bigdata1:/home/ （-r 表示递归）
+    $ scp -r /bin root@bigdata2:/home/ （-r 表示递归）
 
 3、下载文件到本地
 
@@ -71,3 +71,39 @@ scp工具，基于ssh远程安全登录的，可以将主机A上的文件或目�
 
     将bigdata2上的/bin下载到本地并改名为bin.bak
     $ scp -r root@bigdata2:/home/bin ./bin.bak
+
+## 远程拷贝命令 rsync
+
+    $ rsync -av /home/test.txt root@bigdata2:/home/
+
+其中，`-a`是归档拷贝，`-v`显示复制过程。此命令将本地命令传输给其他主机。
+
+`rsync`命令要比`scp`更好，只会拷贝差异的部分。
+
+#### 分发文件给所有主机（最好先实现免密登录）
+
+    #!/bin/bash
+    #1 获取输入参数个数，如果没有参数，直接退出
+    pcount=$#
+    if ((pcount==0)); then
+    echo no args;
+    exit;
+    fi
+
+    #2 获取文件名称
+    p1=$1
+    fname=`basename #p1`
+    echo fname=$fname
+
+    #3 获取上级目录到绝对路径,`-P`是为了追踪软连接
+    pdir=`cd -P $(dirname $p1); pwd`
+    echo pdir=$pdir
+
+    #4 获取当前用户
+    user=`whoami`
+
+    #5 循环
+    for((host=103; host<105; host++)); do
+        echo ------------ hadoop$host -------------
+        rsync -av $pdir/$fname $user@hadoop$host:$pdir
+    done
