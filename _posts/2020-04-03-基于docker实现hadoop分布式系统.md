@@ -68,11 +68,9 @@ hadoop使用2.7.7版本，下载地址：[http://apache.claz.org/hadoop/common/h
     先创建一个docker网络类型
     $ docker network create --subnet=192.168.0.0/16 assign
     指定ip启动docker容器
-    $ docker run -i -t --net assign --name=hadoop102 --ip 192.168.0.102 baseos /bin/bash
+    $ docker run -it --net assign --name hadoop102 --ip 192.168.0.102 baseos /bin/bash
     进入容器
     $ docker exec -it hadoop102 /bin/bash
-
-三台容器配置，系统：centos7.2、内存：2G、硬盘：10G
 
 给三台服务器分配IP地址（比如）：192.168.0.102/103/104
 
@@ -247,11 +245,14 @@ hadoop使用2.7.7版本，下载地址：[http://apache.claz.org/hadoop/common/h
 
 修改/usr/local/hadoop-2.7.7/etc/hadoop/masters文件，该文件指定namenode节点所在的服务器机器。删除localhost，添加namenode节点的主机名hadoop-master；不建议使用IP地址，因为IP地址可能会变化，但是主机名一般不会变化。
 
-    vi /usr/local/hadoop-2.7.7/etc/hadoop/masters
+    $ vi /usr/local/hadoop-2.7.7/etc/hadoop/masters
     ## 内容
-    hadoop-master
+    hadoop102
 
-    xsync hadoop-2.7.7
+    $ rm -rf /usr/local/hadoop-2.7.7/etc/hadoop/slaves
+
+    同步hadoop配置
+    $ xsync hadoop-2.7.7
     重启所有docker
     $ docker restart $(docker ps -aq)
 
@@ -261,9 +262,9 @@ hadoop使用2.7.7版本，下载地址：[http://apache.claz.org/hadoop/common/h
 
     vi /usr/local/hadoop-2.7.7/etc/hadoop/slaves
     ## 内容
-    hadoop-slave1
-    hadoop-slave2
-    hadoop-slave3
+    hadoop102
+    hadoop103
+    hadoop104
 
 配置hadoop-slave的hadoop环境
 下面以配置hadoop-slave1的hadoop为例进行演示，用户需参照以下步骤完成其他hadoop-slave2~3服务器的配置。
@@ -288,7 +289,7 @@ scp -r /usr/local/hadoop hadoop-slave1:/usr/local/
 
 ## 2、然后启动hadoop：
 
-    sbin/start-all.sh
+    start-all.sh
 
 ## 3、使用jps命令查看运行情况
 
@@ -297,6 +298,7 @@ scp -r /usr/local/hadoop hadoop-slave1:/usr/local/
     25742 NameNode
     26387 Jps
     26078 ResourceManager
+
     #slave 执行 jps查看运行情况
     24002 NodeManager
     23899 DataNode
@@ -323,5 +325,5 @@ scp -r /usr/local/hadoop hadoop-slave1:/usr/local/
 
 ## 5、hadoop 重启
 
-    sbin/stop-all.sh
-    sbin/start-all.sh
+    $ stop-all.sh
+    $ start-all.sh
