@@ -77,7 +77,7 @@ hadoop使用2.7.7版本，下载地址：[http://apache.claz.org/hadoop/common/h
 规划：102作主节点，同时将三台作为数据节点102、103、104
 
 
-## 免密登陆
+## 免密登录
 
 ### 1、首先关闭每个容器的防火墙和SELINUX
 
@@ -96,7 +96,7 @@ hadoop使用2.7.7版本，下载地址：[http://apache.claz.org/hadoop/common/h
     -- 添加
     SELINUX=disabled
 
-### 2、免密码登录本机
+### 2、机器之间免密登录
 
 配置每台机器与其他机器免密登录；
 
