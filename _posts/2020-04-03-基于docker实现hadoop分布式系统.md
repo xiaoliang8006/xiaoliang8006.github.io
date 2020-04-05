@@ -7,7 +7,7 @@ tags: 博客
 
 Hadoop的搭建有三种方式，单机版适合开发调试；伪分布式版，适合模拟集群学习；完全分布式，生产使用的模式。这篇文件介绍如何基于docker搭建完全分布式的hadoop集群，一个主节点，三个数据节点为例来讲解。
 
-思路是首先将第一台机器配置好，再将hadoop、Java、/etc/profile三个文件(夹)分发给所有机器。为了简单起见，这里假设有三个机器作为资源节点：hadoop102、hadoop103、hadoop104。每台机器上存储一个DataNode和一个NodeManager。然后实际情况下，NameNode和secondaryNameNode和ResourceManager分别占用一台机器，我们可以称他们三位是系统的管理者。所以实际的分布式系统一般至少6台机器的。这里因为硬件不够，我们把三位管理者分别部署到已有的三台机器上也可。
+思路是首先将第一台机器配置好，再将hadoop、Java、/root/.bashrc三个文件(夹)分发给所有机器。为了简单起见，这里假设有三个机器作为资源节点：hadoop102、hadoop103、hadoop104。每台机器上存储一个DataNode和一个NodeManager。然后实际情况下，NameNode和secondaryNameNode和ResourceManager分别占用一台机器，我们可以称他们三位是系统的管理者。所以实际的分布式系统一般至少6台机器的。这里因为硬件不够，我们把三位管理者分别部署到已有的三台机器上也可。
 
 由于硬件受限，这里我们用的不是三台物理机器，而是在一台物理机器上搭建了三个容器，给出容器的虚拟ip，和三台物理机器操作时差别并不大。
 
@@ -17,11 +17,50 @@ Hadoop的搭建有三种方式，单机版适合开发调试；伪分布式版�
 
 ### 1、软件版本
 
-jdk使用1.8版本，下载地址：
+jdk使用1.8版本，下载地址：[https://www.oracle.com/java/technologies/javase-jdk8-downloads.html](https://www.oracle.com/java/technologies/javase-jdk8-downloads.html)
 
-hadoop使用2.7.3版本，下载地址：http://apache.claz.org/hadoop/common/hadoop-2.7.3/hadoop-2.7.3.tar.gz
+hadoop使用2.7.3版本，下载地址：[http://apache.claz.org/hadoop/common/hadoop-2.7.3/hadoop-2.7.3.tar.gz](http://apache.claz.org/hadoop/common/hadoop-2.7.3/hadoop-2.7.3.tar.gz)
 
-### 2、host配置和主机名（三台）
+### 2、创建docker容器
+
+先下载原始Centos/Ubuntu镜像创建容器进入容器，
+      $ docker pull centos:7.2.1511
+      $ docker run -itd --name=centos7.2 centos:7.2.1511 /bin/bash
+
+      安装ifconfig便于查看ip
+      $ yum install net-tools.x86_64
+
+      安装ssh
+      $ yum install -y openssh-server && yum install -y openssh-clients
+      $ ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key
+      $ ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key
+      启动之前需手动创建/var/run/sshd，不然启动sshd的时候会报错
+      mkdir -p /var/run/sshd
+      sshd以守护进程运行(将这行命令追加到/root/.bashrc中)
+      $ /usr/sbin/sshd -D &
+      查看ssh的22端口是否开启
+      $ netstat -apn | grep ssh
+
+      安装rsync
+      $ yum install rsync
+      在文章“2020-01-02-ssh免密登录及scp、rsync文件传输”里有个[同步脚本xsync](https://xiaoliang8006.github.io/2020/01/ssh%E5%85%8D%E5%AF%86%E7%99%BB%E5%BD%95%E5%8F%8Ascp-rsync%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93/)。后面会经常用到这个脚本！
+
+还有192.168.0.103和192.168.0.104两个容器，我们可以先等102配置好hadoop之后，打包102作为镜像再根据新的镜像创建103和104容器即可。而且打包的hadoop镜像放在docker hub中也方便后续使用。
+
+这里我们为了和三台物理机操作相同，还是分别创建三个容器进行。
+
+### 3、host配置和主机名（三台）
+
+先把我们上面配置好的第一台打包成镜像baseos,拉取新镜像baseos(这里baseos相当于一台完整功能的物理机器)，开始创建另外两个容器。
+
+    查看类型
+    $ docker network ls
+    先创建一个docker网络类型
+    $ docker network create --subnet=192.168.0.0/16 assign
+    指定ip启动docker容器
+    $ docker run -i -t --net assign --name=hadoop102 --ip 192.168.0.102 baseOS /bin/bash
+    进入容器
+    $ docker exec -it hadoop102 /bin/bash
 
 三台容器配置，系统：centos7.2、内存：2G、硬盘：10G
 
@@ -29,34 +68,6 @@ hadoop使用2.7.3版本，下载地址：http://apache.claz.org/hadoop/common/ha
 
 规划：102作主节点，同时将三台作为数据节点102、103、104
 
-修改三台服务器的hosts文件
-
-    $ vim /etc/hosts
-
-    192.168.0.102 hadoop102
-    192.168.0.103 hadoop103
-    192.168.0.104 hadoop104
-
-
-    $ vi /etc/sysconfig/network
-
-    HOSTNAME=hadoop102
-
-执行reboot后生效，完成之后依次修改其它容器为： hadoop103~hadoop104。
-
-### 3、先安装jdk
-
-    建议使用yum安装jdk,也可以自行下载安装
-
-    yum -y install java-1.7.0-openjdk*
-    配置环境变量，修改配置文件vim /etc/profile
-
-    export JAVA_HOME=/usr/lib/jvm/jre-1.7.0-openjdk.x86_64
-    export PATH=$JAVA_HOME/bin:$PATH
-    export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
-    使用souce命令让立刻生效
-
-    source /etc/profile
 
 ## 免密登陆
 
@@ -79,56 +90,55 @@ hadoop使用2.7.3版本，下载地址：http://apache.claz.org/hadoop/common/ha
 
 ### 2、免密码登录本机
 
-下面以配置hadoop102本机无密码登录为例进行讲解，用户需参照下面步骤完成hadoop103~104的本机无密码登录；
+配置每台机器与其他机器免密登录；
 
     1）生产秘钥
-
-    ssh-keygen -t rsa
+    $ ssh-keygen -t rsa
     2）将公钥追加到”authorized_keys”文件
-
-    cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
-    3）赋予权限
-
-    chmod 600 .ssh/authorized_keys
+    $ cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+    3）赋予权限(如果将600设为777服务器会拒绝秘钥，因为服务器为了安全考虑)
+    $ chmod 600 .ssh/authorized_keys
     4）验证本机能无密码访问
+    $ ssh hadoop102
 
-    ssh hadoop102
-    最后，依次配置hadoop103~hadoop104无密码访问
-
-### 3、hadoop-master本机无密码登录hadoop-slave1、hadoop-slave2、hadoop-slave3，以hadoop-master无密码登录hadoop-slave1为例进行讲解：
-
-1）登录hadoop-slave1 ，复制hadoop-master服务器的公钥”id_rsa.pub”到hadoop-slave1服务器的”root”目录下。
-
-    scp root@hadoop-master:/root/.ssh/id_rsa.pub /root/
-
-2）将hadoop-master的公钥（id_rsa.pub）追加到hadoop-slave1的authorized_keys中
-
-    cat id_rsa.pub >> .ssh/authorized_keys
-    rm -rf  id_rsa.pub
-
-3）在 hadoop-master上面测试
-
-    ssh  hadoop-slave1
-
-### 4、配置hadoop-slave1~hadoop-slave3本机无密码登录hadoop-master
-
-下面以hadoop-slave1无密码登录hadoop-master为例进行讲解，用户需参照下面步骤完成hadoop-slave2~hadoop-slave3无密码登录hadoop-master。
-
-1）登录hadoop-master，复制hadoop-slave1服务器的公钥”id_rsa.pub”到hadoop-master服务器的”/root/”目录下。
-
-scp root@hadoop-slave1:/root/.ssh/id_rsa.pub /root/
-2）将hadoop-slave1的公钥（id_rsa.pub）追加到hadoop-master的authorized_keys中。
-
-cat id_rsa.pub >> .ssh/authorized_keys
-rm -rf  id_rsa.pub //删除id_rsa.pub
-3）在 hadoop-slave1上面测试
-
-ssh  hadoop-master
-依次配置 hadoop-slave2、hadoop-slave3
+    5）将私钥发给其他机器
+    $ xsync ~/.ssh/id_rsa
+    6）将authorized_keys发给其他机器
+    $ xsync ~/.ssh/authorized_keys
 
 到此主从的无密登录已经完成了。
 
 # 二、Hadoop环境搭建
+
+## 修改第一台服务器的hosts文件，然后用xsync脚本分发给其他服务器。
+
+    $ vim /etc/hosts
+
+    192.168.0.102 hadoop102
+    192.168.0.103 hadoop103
+    192.168.0.104 hadoop104
+
+
+## 安装jdk，并分发给其他服务器
+
+    配置环境变量，修改配置文件vi /root/.bashrc
+
+    export JAVA_HOME=/usr/local/jdk1.8
+    export PATH=$JAVA_HOME/bin:$PATH
+    export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+
+    使用souce命令让立刻生效
+    source /etc/profile
+
+
+## master(hadoop102)上，解压缩安装包及创建基本目录
+
+    #下载
+    wget http://apache.claz.org/hadoop/common/hadoop-2.7.3/hadoop-2.7.3.tar.gz
+    #解压
+    tar -xzvf  hadoop-2.7.3.tar.gz    -C /usr/local
+
+## 配置master(hadoop102)的hadoop环境变量
 
 每台机器上hadoop配置文件主要有7(1+3+3)个:
 
@@ -140,22 +150,9 @@ ssh  hadoop-master
 
 `3`是`hdfs-site.xml`、`mapred-site.xml`、`yarn-site.xml`。这三个文件是主要配置文件。
 
-## 配置hadoop-master的hadoop环境
-
-## hadoop-master上 解压缩安装包及创建基本目录
-
-    #下载
-    wget http://apache.claz.org/hadoop/common/hadoop-2.7.3/hadoop-2.7.3.tar.gz
-    #解压
-    tar -xzvf  hadoop-2.7.3.tar.gz    -C /usr/local
-    #重命名
-    mv  hadoop-2.7.3  hadoop
-
-## 配置hadoop-master的hadoop环境变量
-
 ### 1、配置环境变量，修改配置文件vi /etc/profile
 
-    export HADOOP_HOME=/usr/local/hadoop
+    export HADOOP_HOME=/usr/local/hadoop-2.7.3
     export PATH=$PATH:$HADOOP_HOME/bin
     使得hadoop命令在当前终端立即生效
 
