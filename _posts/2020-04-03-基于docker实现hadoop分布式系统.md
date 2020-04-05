@@ -41,8 +41,8 @@ hadoop使用2.7.7版本，下载地址：[http://apache.claz.org/hadoop/common/h
       $ ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key
       $ ssh-keygen -t rsa -f /etc/ssh/ssh_host_ecdsa_key
       $ ssh-keygen -t rsa -f /etc/ssh/ssh_host_ed25519_key
-      启动之前需手动创建/var/run/sshd，不然启动sshd的时候会报错
-      mkdir -p /var/run/sshd
+      上面四个缺哪个执行哪个。启动之前需手动创建/var/run/sshd，不然启动sshd的时候会报错
+      $ mkdir -p /var/run/sshd
       sshd以守护进程运行(将这行命令追加到/root/.bashrc中)
       $ /usr/sbin/sshd -D &
       查看ssh的22端口是否开启
@@ -55,7 +55,7 @@ hadoop使用2.7.7版本，下载地址：[http://apache.claz.org/hadoop/common/h
 
 编辑到/sbin/xsync里，修改权限为755
 
-还有192.168.0.103和192.168.0.104两个容器，我们可以先等102配置好hadoop之后，打包102作为镜像再根据新的镜像创建103和104容器即可。而且打包的hadoop镜像放在docker hub中也方便后续使用。
+还有192.168.0.103和192.168.0.104两个容器，我们可以先等102配置好hadoop之后，打包102作为镜像再根据新的镜像创建103和104容器即可。而且打包的hadoop镜像放在docker hub中也方便后续使用。这里将102分配为NN，103分配为RM，104分配为2NN。然后三台容器每台都配有DN和NM。
 
 这里我们为了和三台物理机操作相同，还是分别创建三个容器进行。
 
@@ -126,26 +126,24 @@ hadoop使用2.7.7版本，下载地址：[http://apache.claz.org/hadoop/common/h
     192.168.0.103 hadoop103
     192.168.0.104 hadoop104
 
+    $ xsync /etc/hosts
+
 
 ## 安装jdk
 
-    配置环境变量，修改配置文件vi /root/.bashrc
+    下载jdk并解压，配置环境变量，修改配置文件vi /root/.bashrc
 
     export JAVA_HOME=/usr/local/jdk1.8
     export PATH=$JAVA_HOME/bin:$PATH
     export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
 
+    同步jdk
+    $ xsync jdk1.8
 
-## master(hadoop102)上，解压缩安装包及创建基本目录
-
-    #下载
-    $ wget http://apache.claz.org/hadoop/common/hadoop-2.7.7/hadoop-2.7.7.tar.gz
-    #解压
-    $ tar -xzvf  hadoop-2.7.7.tar.gz    -C /usr/local
 
 ## 配置master(hadoop102)的hadoop环境变量
 
-每台机器上hadoop配置文件主要有7(1+3+3)个:
+首先下载hadoop-2.7.7并解压。每台机器上hadoop配置文件主要有7(1+3+3)个:
 
 `1`是`core-site.xml`：核心配置文件，指定HDFS中NameNode的地址和指定Hadoop运行时产生文件的存储目录。
 
@@ -153,7 +151,7 @@ hadoop使用2.7.7版本，下载地址：[http://apache.claz.org/hadoop/common/h
 `3`是`hadoop-env.sh`、`mapred-env.sh`、`yarn-env.sh`。这3个文件主要就是配置一行JAVA_HOME就可以啦，很简单！
 
 
-`3`是`hdfs-site.xml`、`mapred-site.xml`、`yarn-site.xml`。这三个文件是主要配置文件。
+`3`是`hdfs-site.xml`、`mapred-site.xml`、`yarn-site.xml`。这三个文件是主要配置文件。`hdfs-site.xml`配置2NN，`yarn-site.xml`配置RM，`mapred-site.xml`配置yarn。
 
 先创建几个目录:
 
@@ -184,7 +182,7 @@ hadoop使用2.7.7版本，下载地址：[http://apache.claz.org/hadoop/common/h
             <description>Abase for other temporary directories.</description>
         </property>
         <property>
-            <name>fs.default.name</name>
+            <name>fs.defaultFS</name>
             <value>hdfs://hadoop102:9000</value>
         </property>
     </configuration>
@@ -200,13 +198,10 @@ hadoop使用2.7.7版本，下载地址：[http://apache.claz.org/hadoop/common/h
             <name>dfs.replication</name>
             <value>3</value>
         </property>
+        <!-- 配置2NN -->
         <property>
-            <name>dfs.name.dir</name>
-            <value>/usr/local/hadoop-2.7.7/hdfs/name</value>
-        </property>
-        <property>
-            <name>dfs.data.dir</name>
-            <value>/usr/local/hadoop-2.7.7/hdfs/data</value>
+            <name>dfs.namenode.secondary.http-address</name>
+            <value>hadoop104:50090</value>
         </property>
     </configuration>
 
@@ -220,10 +215,6 @@ hadoop使用2.7.7版本，下载地址：[http://apache.claz.org/hadoop/common/h
       <property>
           <name>mapreduce.framework.name</name>
           <value>yarn</value>
-      </property>
-       <property>
-          <name>mapred.job.tracker</name>
-          <value>http://hadoop102:9001</value>
       </property>
     </configuration>
 
@@ -249,32 +240,23 @@ hadoop使用2.7.7版本，下载地址：[http://apache.claz.org/hadoop/common/h
     ## 内容
     hadoop102
 
-    $ rm -rf /usr/local/hadoop-2.7.7/etc/hadoop/slaves
 
-    同步hadoop配置
-    $ xsync hadoop-2.7.7
-    重启所有docker
-    $ docker restart $(docker ps -aq)
-
-### 7、配置slaves文件（Master主机特有）
+### 7、配置slaves文件
 
 修改/usr/local/hadoop-2.7.7/etc/hadoop/slaves文件，该文件指定哪些服务器节点是datanode节点。删除locahost，添加所有datanode节点的主机名，如下所示。
 
-    vi /usr/local/hadoop-2.7.7/etc/hadoop/slaves
+    $ vi /usr/local/hadoop-2.7.7/etc/hadoop/slaves
     ## 内容
     hadoop102
     hadoop103
     hadoop104
 
-配置hadoop-slave的hadoop环境
-下面以配置hadoop-slave1的hadoop为例进行演示，用户需参照以下步骤完成其他hadoop-slave2~3服务器的配置。
+### 8、同步所有文件到其他容器，并重启所有容器
 
-1）复制hadoop到hadoop-slave1节点
-
-scp -r /usr/local/hadoop hadoop-slave1:/usr/local/
-登录hadoop-slave1服务器，删除slaves内容
-
-    rm -rf /usr/local/hadoop/etc/hadoop/slaves
+    同步hadoop配置
+    $ xsync hadoop-2.7.7
+    重启所有docker
+    $ docker restart $(docker ps -aq)
 
 
 # 三、启动集群
@@ -289,7 +271,7 @@ scp -r /usr/local/hadoop hadoop-slave1:/usr/local/
 
 ## 2、然后启动hadoop：
 
-    start-all.sh
+    $ start-all.sh
 
 ## 3、使用jps命令查看运行情况
 
@@ -308,7 +290,7 @@ scp -r /usr/local/hadoop hadoop-slave1:/usr/local/
 
 通过简单的jps命令虽然可以查看HDFS文件管理系统、MapReduce服务是否启动成功，但是无法查看到Hadoop整个集群的运行状态。我们可以通过hadoop dfsadmin -report进行查看。用该命令可以快速定位出哪些节点挂掉了，HDFS的容量以及使用了多少，以及每个节点的硬盘使用情况。
 
-    hadoop dfsadmin -report
+    $ hadoop dfsadmin -report
 
 输出结果：
 
