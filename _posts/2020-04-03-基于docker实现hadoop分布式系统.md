@@ -32,6 +32,8 @@ hadoop使用2.7.7版本，下载地址：[http://apache.claz.org/hadoop/common/h
       $ yum install net-tools.x86_64
       安装which, hadoop脚本里有用到但原生系统没带
       $ yum install which
+      修改root密码
+      $ passwd root
 
       安装ssh
       $ yum install -y openssh-server && yum install -y openssh-clients
@@ -45,14 +47,13 @@ hadoop使用2.7.7版本，下载地址：[http://apache.claz.org/hadoop/common/h
       $ /usr/sbin/sshd -D &
       查看ssh的22端口是否开启
       $ netstat -apn | grep ssh
-      修改root密码
-      $ passwd root
 
       安装rsync
       $ yum install rsync
-      在文章“2020-01-02-ssh免密登录及scp、rsync文件传输”里有个[同步脚本xsync](https://xiaoliang8006.github.io/2020/01/ssh%E5%85%8D%E5%AF%86%E7%99%BB%E5%BD%95%E5%8F%8Ascp-rsync%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93/)。后面会经常用到这个脚本！
 
-      编辑到/sbin/xsync里，修改权限为755
+在文章“2020-01-02-ssh免密登录及scp、rsync文件传输”里有个[同步脚本xsync](https://xiaoliang8006.github.io/2020/01/ssh%E5%85%8D%E5%AF%86%E7%99%BB%E5%BD%95%E5%8F%8Ascp-rsync%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93/)。后面会经常用到这个脚本！
+
+编辑到/sbin/xsync里，修改权限为755
 
 还有192.168.0.103和192.168.0.104两个容器，我们可以先等102配置好hadoop之后，打包102作为镜像再根据新的镜像创建103和104容器即可。而且打包的hadoop镜像放在docker hub中也方便后续使用。
 
@@ -140,9 +141,9 @@ hadoop使用2.7.7版本，下载地址：[http://apache.claz.org/hadoop/common/h
 ## master(hadoop102)上，解压缩安装包及创建基本目录
 
     #下载
-    wget http://apache.claz.org/hadoop/common/hadoop-2.7.7/hadoop-2.7.7.tar.gz
+    $ wget http://apache.claz.org/hadoop/common/hadoop-2.7.7/hadoop-2.7.7.tar.gz
     #解压
-    tar -xzvf  hadoop-2.7.7.tar.gz    -C /usr/local
+    $ tar -xzvf  hadoop-2.7.7.tar.gz    -C /usr/local
 
 ## 配置master(hadoop102)的hadoop环境变量
 
@@ -157,10 +158,11 @@ hadoop使用2.7.7版本，下载地址：[http://apache.claz.org/hadoop/common/h
 `3`是`hdfs-site.xml`、`mapred-site.xml`、`yarn-site.xml`。这三个文件是主要配置文件。
 
 先创建几个目录:
-    cd /usr/local/hadoop-2.7.7
-    mkdir hdfs
-    cd hdfs
-    mkdir name data tmp
+
+    $ cd /usr/local/hadoop-2.7.7
+    $ mkdir hdfs
+    $ cd hdfs
+    $ mkdir name data tmp
     # name文件夹存储NameNode文件，data存储DataNode数据，tmp存储临时文件
 
 ### 1、配置环境变量，并分发给其他服务器
