@@ -24,6 +24,7 @@ hadoop使用2.7.3版本，下载地址：[http://apache.claz.org/hadoop/common/h
 ### 2、创建docker容器
 
 先下载原始Centos/Ubuntu镜像创建容器进入容器，
+
       $ docker pull centos:7.2.1511
       $ docker run -itd --name=centos7.2 centos:7.2.1511 /bin/bash
 
