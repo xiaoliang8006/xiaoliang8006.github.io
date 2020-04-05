@@ -19,14 +19,14 @@ Hadoop的搭建有三种方式，单机版适合开发调试；伪分布式版�
 
 jdk使用1.8版本，下载地址：[https://www.oracle.com/java/technologies/javase-jdk8-downloads.html](https://www.oracle.com/java/technologies/javase-jdk8-downloads.html)
 
-hadoop使用2.7.3版本，下载地址：[http://apache.claz.org/hadoop/common/hadoop-2.7.3/hadoop-2.7.3.tar.gz](http://apache.claz.org/hadoop/common/hadoop-2.7.3/hadoop-2.7.3.tar.gz)
+hadoop使用2.7.7版本，下载地址：[http://apache.claz.org/hadoop/common/hadoop-2.7.7/hadoop-2.7.7.tar.gz](http://apache.claz.org/hadoop/common/hadoop-2.7.7/hadoop-2.7.7.tar.gz)
 
 ### 2、创建docker容器
 
 先下载原始Centos/Ubuntu镜像创建容器进入容器，
 
       $ docker pull centos:7.2.1511
-      $ docker run -itd --name=centos7.2 centos:7.2.1511 /bin/bash
+      $ docker run -it --name centos7.2 centos:7.2.1511 /bin/bash
 
       安装ifconfig便于查看ip
       $ yum install net-tools.x86_64
@@ -35,16 +35,22 @@ hadoop使用2.7.3版本，下载地址：[http://apache.claz.org/hadoop/common/h
       $ yum install -y openssh-server && yum install -y openssh-clients
       $ ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key
       $ ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key
+      $ ssh-keygen -t rsa -f /etc/ssh/ssh_host_ecdsa_key
+      $ ssh-keygen -t rsa -f /etc/ssh/ssh_host_ed25519_key
       启动之前需手动创建/var/run/sshd，不然启动sshd的时候会报错
       mkdir -p /var/run/sshd
       sshd以守护进程运行(将这行命令追加到/root/.bashrc中)
       $ /usr/sbin/sshd -D &
       查看ssh的22端口是否开启
       $ netstat -apn | grep ssh
+      修改root密码
+      $ passwd root
 
       安装rsync
       $ yum install rsync
       在文章“2020-01-02-ssh免密登录及scp、rsync文件传输”里有个[同步脚本xsync](https://xiaoliang8006.github.io/2020/01/ssh%E5%85%8D%E5%AF%86%E7%99%BB%E5%BD%95%E5%8F%8Ascp-rsync%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93/)。后面会经常用到这个脚本！
+
+      编辑到/sbin/xsync里，修改权限为755
 
 还有192.168.0.103和192.168.0.104两个容器，我们可以先等102配置好hadoop之后，打包102作为镜像再根据新的镜像创建103和104容器即可。而且打包的hadoop镜像放在docker hub中也方便后续使用。
 
@@ -59,7 +65,7 @@ hadoop使用2.7.3版本，下载地址：[http://apache.claz.org/hadoop/common/h
     先创建一个docker网络类型
     $ docker network create --subnet=192.168.0.0/16 assign
     指定ip启动docker容器
-    $ docker run -i -t --net assign --name=hadoop102 --ip 192.168.0.102 baseOS /bin/bash
+    $ docker run -i -t --net assign --name=hadoop102 --ip 192.168.0.102 baseos /bin/bash
     进入容器
     $ docker exec -it hadoop102 /bin/bash
 
@@ -98,7 +104,7 @@ hadoop使用2.7.3版本，下载地址：[http://apache.claz.org/hadoop/common/h
     2）将公钥追加到”authorized_keys”文件
     $ cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
     3）赋予权限(如果将600设为777服务器会拒绝秘钥，因为服务器为了安全考虑)
-    $ chmod 600 .ssh/authorized_keys
+    $ chmod 600 ~/.ssh/authorized_keys
     4）验证本机能无密码访问
     $ ssh hadoop102
 
@@ -113,7 +119,7 @@ hadoop使用2.7.3版本，下载地址：[http://apache.claz.org/hadoop/common/h
 
 ## 修改第一台服务器的hosts文件，然后用xsync脚本分发给其他服务器。
 
-    $ vim /etc/hosts
+    $ vi /etc/hosts
 
     192.168.0.102 hadoop102
     192.168.0.103 hadoop103
@@ -128,16 +134,13 @@ hadoop使用2.7.3版本，下载地址：[http://apache.claz.org/hadoop/common/h
     export PATH=$JAVA_HOME/bin:$PATH
     export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
 
-    使用souce命令让立刻生效
-    source /etc/profile
-
 
 ## master(hadoop102)上，解压缩安装包及创建基本目录
 
     #下载
-    wget http://apache.claz.org/hadoop/common/hadoop-2.7.3/hadoop-2.7.3.tar.gz
+    wget http://apache.claz.org/hadoop/common/hadoop-2.7.7/hadoop-2.7.7.tar.gz
     #解压
-    tar -xzvf  hadoop-2.7.3.tar.gz    -C /usr/local
+    tar -xzvf  hadoop-2.7.7.tar.gz    -C /usr/local
 
 ## 配置master(hadoop102)的hadoop环境变量
 
@@ -151,28 +154,27 @@ hadoop使用2.7.3版本，下载地址：[http://apache.claz.org/hadoop/common/h
 
 `3`是`hdfs-site.xml`、`mapred-site.xml`、`yarn-site.xml`。这三个文件是主要配置文件。
 
-### 1、配置环境变量，修改配置文件vi /etc/profile
+### 1、配置环境变量
 
-    export HADOOP_HOME=/usr/local/hadoop-2.7.3
+    修改配置文件vi /root/.bashrc
+    export HADOOP_HOME=/usr/local/hadoop-2.7.7
     export PATH=$PATH:$HADOOP_HOME/bin
-    使得hadoop命令在当前终端立即生效
-
-    source /etc/profile
-    下面配置，文件都在：/usr/local/hadoop/etc/hadoop路径下
 
 ### 2、配置core-site.xml
 
-修改Hadoop核心配置文件/usr/local/hadoop/etc/hadoop/core-site.xml，通过fs.default.name指定NameNode的IP地址和端口号，通过hadoop.tmp.dir指定hadoop数据存储的临时文件夹。
+下面配置，文件都在：/usr/local/hadoop-2.7.7/etc/hadoop路径下
+
+修改Hadoop核心配置文件/usr/local/hadoop-2.7.7/etc/hadoop/core-site.xml，通过fs.default.name指定NameNode的IP地址和端口号，通过hadoop.tmp.dir指定hadoop数据存储的临时文件夹。
 
     <configuration>
         <property>
             <name>hadoop.tmp.dir</name>
-            <value>file:/usr/local/hadoop/tmp</value>
+            <value>file:/usr/local/hadoop-2.7.7/tmp</value>
             <description>Abase for other temporary directories.</description>
         </property>
         <property>
             <name>fs.defaultFS</name>
-            <value>hdfs://hadoop-master:9000</value>
+            <value>hdfs://hadoop102:9000</value>
         </property>
     </configuration>
 
@@ -180,7 +182,7 @@ hadoop使用2.7.3版本，下载地址：[http://apache.claz.org/hadoop/common/h
 
 ### 3、配置hdfs-site.xml：
 
-修改HDFS核心配置文件/usr/local/hadoop/etc/hadoop/hdfs-site.xml，通过dfs.replication指定HDFS的备份因子为3，通过dfs.name.dir指定namenode节点的文件存储目录，通过dfs.data.dir指定datanode节点的文件存储目录。
+修改HDFS核心配置文件/usr/local/hadoop-2.7.7/etc/hadoop/hdfs-site.xml，通过dfs.replication指定HDFS的备份因子为3，通过dfs.name.dir指定namenode节点的文件存储目录，通过dfs.data.dir指定datanode节点的文件存储目录。
 
     <configuration>
         <property>
@@ -189,11 +191,11 @@ hadoop使用2.7.3版本，下载地址：[http://apache.claz.org/hadoop/common/h
         </property>
         <property>
             <name>dfs.name.dir</name>
-            <value>/usr/local/hadoop/hdfs/name</value>
+            <value>/usr/local/hadoop-2.7.7/hdfs/name</value>
         </property>
         <property>
             <name>dfs.data.dir</name>
-            <value>/usr/local/hadoop/hdfs/data</value>
+            <value>/usr/local/hadoop-2.7.7/hdfs/data</value>
         </property>
     </configuration>
 
@@ -201,8 +203,8 @@ hadoop使用2.7.3版本，下载地址：[http://apache.claz.org/hadoop/common/h
 
 拷贝mapred-site.xml.template为mapred-site.xml，在进行修改
 
-    $ cp /usr/local/hadoop/etc/hadoop/mapred-site.xml.template /usr/local/hadoop/etc/hadoop/mapred-site.xml
-    $ vim /usr/local/hadoop/etc/hadoop/mapred-site.xml
+    $ cp /usr/local/hadoop-2.7.7/etc/hadoop/mapred-site.xml.template /usr/local/hadoop/etc/hadoop/mapred-site.xml
+    $ vim /usr/local/hadoop-2.7.7/etc/hadoop/mapred-site.xml
     <configuration>
       <property>
           <name>mapreduce.framework.name</name>
@@ -230,17 +232,20 @@ hadoop使用2.7.3版本，下载地址：[http://apache.claz.org/hadoop/common/h
 
 ### 6、配置masters文件
 
-修改/usr/local/hadoop/etc/hadoop/masters文件，该文件指定namenode节点所在的服务器机器。删除localhost，添加namenode节点的主机名hadoop-master；不建议使用IP地址，因为IP地址可能会变化，但是主机名一般不会变化。
+修改/usr/local/hadoop-2.7.7/etc/hadoop/masters文件，该文件指定namenode节点所在的服务器机器。删除localhost，添加namenode节点的主机名hadoop-master；不建议使用IP地址，因为IP地址可能会变化，但是主机名一般不会变化。
 
-    vi /usr/local/hadoop/etc/hadoop/masters
+    vi /usr/local/hadoop-2.7.7/etc/hadoop/masters
     ## 内容
     hadoop-master
 
+    重启所有docker
+    $ docker restart $(docker ps -aq)
+
 ### 7、配置slaves文件（Master主机特有）
 
-修改/usr/local/hadoop/etc/hadoop/slaves文件，该文件指定哪些服务器节点是datanode节点。删除locahost，添加所有datanode节点的主机名，如下所示。
+修改/usr/local/hadoop-2.7.7/etc/hadoop/slaves文件，该文件指定哪些服务器节点是datanode节点。删除locahost，添加所有datanode节点的主机名，如下所示。
 
-    vi /usr/local/hadoop/etc/hadoop/slaves
+    vi /usr/local/hadoop-2.7.7/etc/hadoop/slaves
     ## 内容
     hadoop-slave1
     hadoop-slave2
