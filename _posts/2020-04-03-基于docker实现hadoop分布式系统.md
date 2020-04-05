@@ -30,6 +30,8 @@ hadoop使用2.7.7版本，下载地址：[http://apache.claz.org/hadoop/common/h
 
       安装ifconfig便于查看ip
       $ yum install net-tools.x86_64
+      安装which, hadoop脚本里有用到但原生系统没带
+      $ yum install which
 
       安装ssh
       $ yum install -y openssh-server && yum install -y openssh-clients
@@ -126,7 +128,7 @@ hadoop使用2.7.7版本，下载地址：[http://apache.claz.org/hadoop/common/h
     192.168.0.104 hadoop104
 
 
-## 安装jdk，并分发给其他服务器
+## 安装jdk
 
     配置环境变量，修改配置文件vi /root/.bashrc
 
@@ -149,16 +151,25 @@ hadoop使用2.7.7版本，下载地址：[http://apache.claz.org/hadoop/common/h
 `1`是`core-site.xml`：核心配置文件，指定HDFS中NameNode的地址和指定Hadoop运行时产生文件的存储目录。
 
 
-`3`是`hdfs-env.sh`、`mapred-env.sh`、`yarn-env.sh`。这3个文件主要就是配置一行JAVA_HOME就可以啦，很简单！
+`3`是`hadoop-env.sh`、`mapred-env.sh`、`yarn-env.sh`。这3个文件主要就是配置一行JAVA_HOME就可以啦，很简单！
 
 
 `3`是`hdfs-site.xml`、`mapred-site.xml`、`yarn-site.xml`。这三个文件是主要配置文件。
 
-### 1、配置环境变量
+先创建几个目录:
+    cd /usr/local/hadoop-2.7.7
+    mkdir hdfs
+    cd hdfs
+    mkdir name data tmp
+    # name文件夹存储NameNode文件，data存储DataNode数据，tmp存储临时文件
+
+### 1、配置环境变量，并分发给其他服务器
 
     修改配置文件vi /root/.bashrc
     export HADOOP_HOME=/usr/local/hadoop-2.7.7
-    export PATH=$PATH:$HADOOP_HOME/bin
+    export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+
+    $ xsync /root/.bashrc
 
 ### 2、配置core-site.xml
 
@@ -169,11 +180,11 @@ hadoop使用2.7.7版本，下载地址：[http://apache.claz.org/hadoop/common/h
     <configuration>
         <property>
             <name>hadoop.tmp.dir</name>
-            <value>file:/usr/local/hadoop-2.7.7/tmp</value>
+            <value>/usr/local/hadoop-2.7.7/hdfs/tmp</value>
             <description>Abase for other temporary directories.</description>
         </property>
         <property>
-            <name>fs.defaultFS</name>
+            <name>fs.default.name</name>
             <value>hdfs://hadoop102:9000</value>
         </property>
     </configuration>
@@ -204,7 +215,7 @@ hadoop使用2.7.7版本，下载地址：[http://apache.claz.org/hadoop/common/h
 拷贝mapred-site.xml.template为mapred-site.xml，在进行修改
 
     $ cp /usr/local/hadoop-2.7.7/etc/hadoop/mapred-site.xml.template /usr/local/hadoop/etc/hadoop/mapred-site.xml
-    $ vim /usr/local/hadoop-2.7.7/etc/hadoop/mapred-site.xml
+    $ vi /usr/local/hadoop-2.7.7/etc/hadoop/mapred-site.xml
     <configuration>
       <property>
           <name>mapreduce.framework.name</name>
@@ -212,7 +223,7 @@ hadoop使用2.7.7版本，下载地址：[http://apache.claz.org/hadoop/common/h
       </property>
        <property>
           <name>mapred.job.tracker</name>
-          <value>http://hadoop-master:9001</value>
+          <value>http://hadoop102:9001</value>
       </property>
     </configuration>
 
@@ -226,7 +237,7 @@ hadoop使用2.7.7版本，下载地址：[http://apache.claz.org/hadoop/common/h
         </property>
         <property>
             <name>yarn.resourcemanager.hostname</name>
-            <value>hadoop-master</value>
+            <value>hadoop103</value>
         </property>
     </configuration>
 
@@ -238,6 +249,7 @@ hadoop使用2.7.7版本，下载地址：[http://apache.claz.org/hadoop/common/h
     ## 内容
     hadoop-master
 
+    xsync hadoop-2.7.7
     重启所有docker
     $ docker restart $(docker ps -aq)
 
@@ -261,17 +273,6 @@ scp -r /usr/local/hadoop hadoop-slave1:/usr/local/
 
     rm -rf /usr/local/hadoop/etc/hadoop/slaves
 
-2）配置环境变量
-
-    vi /etc/profile
-    ## 内容
-    export HADOOP_HOME=/usr/local/hadoop
-    export PATH=$PATH:$HADOOP_HOME/bin
-    使得hadoop命令在当前终端立即生效；
-
-    source /etc/profile
-
-依次配置其它slave服务
 
 # 三、启动集群
 
@@ -279,7 +280,7 @@ scp -r /usr/local/hadoop hadoop-slave1:/usr/local/
 
 进入master的~/hadoop目录，执行以下操作
 
-    bin/hadoop namenode -format
+    $ hadoop namenode -format
 
 格式化namenode，第一次启动服务前执行的操作，以后不需要执行。
 
