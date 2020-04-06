@@ -59,7 +59,7 @@ hadoop使用2.7.7版本，下载地址：[http://apache.claz.org/hadoop/common/h
 
 这里我们为了和三台物理机操作相同，还是分别创建三个容器进行。
 
-### 3、host配置和主机名（三台）
+### 3、创建容器并配置IP
 
 先把我们上面配置好的第一台打包成镜像baseos,拉取新镜像baseos(这里baseos相当于一台完整功能的物理机器)，开始创建另外两个容器。
 
@@ -263,8 +263,6 @@ hadoop使用2.7.7版本，下载地址：[http://apache.claz.org/hadoop/common/h
 
 ## 1、格式化HDFS文件系统
 
-进入master的~/hadoop目录，执行以下操作
-
     $ hadoop namenode -format
 
 格式化namenode，第一次启动服务前执行的操作，以后不需要执行。
@@ -275,13 +273,21 @@ hadoop使用2.7.7版本，下载地址：[http://apache.claz.org/hadoop/common/h
 
 ## 3、使用jps命令查看运行情况
 
-    #master 执行 jps查看运行情况
-    25928 SecondaryNameNode
+    #hadoop102 执行 jps查看运行情况
     25742 NameNode
+    24032 NodeManager
+    23841 DataNode
     26387 Jps
-    26078 ResourceManager
 
-    #slave 执行 jps查看运行情况
+
+    #hadoop103 执行 jps查看运行情况
+    26078 ResourceManager
+    24002 NodeManager
+    23899 DataNode
+    24179 Jps
+
+    #hadoop104 执行 jps查看运行情况
+    25928 SecondaryNameNode
     24002 NodeManager
     23899 DataNode
     24179 Jps
