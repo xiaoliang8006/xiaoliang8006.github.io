@@ -5,6 +5,7 @@ date: 2019-06-10
 tags: 博客 
 ---
 
+仓库地址：[https://github.com/xiaoliang8006/ChnroutesVPN](https://github.com/xiaoliang8006/ChnroutesVPN)
 
 # chnroutes VPN 自动分流
 
