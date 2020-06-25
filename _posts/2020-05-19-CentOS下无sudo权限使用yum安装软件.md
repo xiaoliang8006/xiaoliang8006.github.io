@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  CentOS下无sudo权限使用yum安装软件
-date: 2020-04-12
+date: 2020-05-19
 tags: 博客
 ---
 
