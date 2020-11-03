@@ -18,10 +18,14 @@ tags: 博客
 
 ## 2.下载rpm包
 
-然后我们从仓库中下载rpm包，比如我们要下载graphviz.x86_64，我们可以这样下载：
+然后我们从仓库中下载rpm包，比如我们要下载tmux.x86_64，我们可以这样下载：
 
-	yumdownloader tmux.x86_64 
-
+```
+$ yumdownloader tmux.x86_64
+or
+$ yum install yum-plugin-downloadonly
+$ yum install  --downloadonly --downloaddir=/home/user_name/devels tmux
+```
 
 ## 3.解压RPM包
 
