@@ -32,7 +32,7 @@ tags: 工具
 
 	1. 在要上传的工程master下（工程里面目录），右键—>GitBash，或者打开cmd切到本目录
 	2. git status
-	3. git add . -A
+	3. git add -A
 	4. git commit -m "更新说明"
 	5. git push git@github.com:xiaoliang8006/xiaoliang8006.github.io.git master
 
@@ -40,7 +40,7 @@ tags: 工具
 	
 	1. 在要上传的工程master下，右键—>GitBash，或者打开cmd切到本目录
 	2. git init
-	3. git add . -A
+	3. git add -A
 	4. git commit -m "更新说明"
 	5. git remote add origin git@github.com:xiaoliang8006/xiaoliang8006.github.io.git   #重新添加
 	
