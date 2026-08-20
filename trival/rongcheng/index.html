@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1667dc">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>荣成亲子游 5天4晚 · 南到北轻松路线</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        ocean: { 50:'#eff9ff',100:'#daf1ff',200:'#bde6ff',300:'#8fd7ff',400:'#5abeff',500:'#349ffb',600:'#1d80f0',700:'#1667dc',800:'#1854b2',900:'#1a488c',950:'#0f2d5c' }
+      },
+      fontFamily: { sans: ['"PingFang SC"','"Microsoft YaHei"','sans-serif'] }
+    }
+  }
+}
+</script>
+<style>
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  body { -webkit-tap-highlight-color: transparent; }
+  ::-webkit-scrollbar { width: 0; height: 0; }
+  .no-sb::-webkit-scrollbar { display: none; }
+  .no-sb { -ms-overflow-style: none; scrollbar-width: none; }
+  .tl::before { content:''; position:absolute; left:31px; top:8px; bottom:8px; width:2px; background:#daf1ff; }
+  .safe-b { padding-bottom: env(safe-area-inset-bottom); }
+</style>
+</head>
+<body class="bg-ocean-50 text-slate-800 antialiased">
+
+<!-- 顶部标题条 -->
+<header class="sticky top-0 z-40 border-b border-ocean-100 bg-white/95 backdrop-blur">
+  <div class="mx-auto max-w-3xl px-4 py-3">
+    <div class="flex items-center gap-2.5">
+      <span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-ocean-700 text-white"><i class="ri-route-line"></i></span>
+      <div class="min-w-0">
+        <h1 class="truncate text-base font-black leading-tight">荣成亲子游 · 5天4晚</h1>
+        <p class="truncate text-xs text-slate-500">南线 → 北线 · 3岁以下轻松版 · 不看表演</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="mx-auto max-w-3xl px-4 pb-28">
+
+  <!-- 路线总览 -->
+  <section id="route" class="pt-5">
+    <h2 class="flex items-center gap-2 text-sm font-bold text-ocean-800">
+      <i class="ri-map-2-line"></i> 路线走向（由南往北）
+    </h2>
+    <div id="routeBar" class="mt-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-ocean-100"></div>
+    <div id="coreTips" class="mt-3 rounded-2xl bg-ocean-900 p-4 text-white"></div>
+  </section>
+
+  <!-- 每日行程 -->
+  <section id="days" class="pt-7">
+    <h2 class="flex items-center gap-2 text-sm font-bold text-ocean-800">
+      <i class="ri-calendar-2-line"></i> 每日顺序与时间
+    </h2>
+    <div id="dayTabs" class="no-sb mt-3 flex gap-2 overflow-x-auto pb-1"></div>
+    <div id="dayPanel" class="mt-3"></div>
+  </section>
+
+  <!-- 景点一览 -->
+  <section id="spots" class="pt-8">
+    <h2 class="flex items-center gap-2 text-sm font-bold text-ocean-800">
+      <i class="ri-landscape-line"></i> 景点一览（含推车可达）
+    </h2>
+    <div id="spotList" class="mt-3 space-y-2"></div>
+  </section>
+
+  <!-- 餐饮 -->
+  <section id="meals" class="pt-8">
+    <h2 class="flex items-center gap-2 text-sm font-bold text-ocean-800">
+      <i class="ri-restaurant-2-line"></i> 餐饮参考
+    </h2>
+    <div id="mealList" class="mt-3 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-ocean-100"></div>
+  </section>
+
+  <!-- 预算 -->
+  <section id="budget" class="pt-8">
+    <h2 class="flex items-center gap-2 text-sm font-bold text-ocean-800">
+      <i class="ri-wallet-3-line"></i> 预算（两大一小 · 自驾）
+    </h2>
+    <div id="budgetBox" class="mt-3"></div>
+  </section>
+
+  <footer class="mt-10 border-t border-ocean-100 pt-6 text-center text-xs text-slate-500">
+    <p>价格与开放时间为参考，实际以景区当日公示为准。</p>
+    <p class="mt-3">由 <a href="https://with.woa.com/" style="color: #8A2BE2;" target="_blank">With</a> 通过自然语言生成</p>
+  </footer>
+</main>
+
+<!-- 底部快捷导航（手机） -->
+<nav class="safe-b fixed inset-x-0 bottom-0 z-40 border-t border-ocean-100 bg-white/97 backdrop-blur">
+  <div id="tabBar" class="mx-auto grid max-w-3xl grid-cols-5"></div>
+</nav>
+
+<script type="module" src="./js/main.js"></script>
+</body>
+</html>
